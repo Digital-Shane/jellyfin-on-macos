@@ -1,0 +1,37 @@
+-- Update the file path to that of your choosing
+set logFile to open for access POSIX file "/Users/mediaserver/Desktop/caddy/StartupLog.log" with write permission
+write "Performing start up." & return to logFile
+
+-- Check that the required volumes exist
+waitForVolume("/Volumes/media0", logFile)
+waitForVolume("/Volumes/media1", logFile)
+
+-- Launch Jellyfin
+tell application "Finder"
+	open application file "Jellyfin.app" of folder "Applications" of startup disk
+end tell
+write "Jellyfin Launched." & return to logFile
+delay 1
+
+-- Command to start Caddy with the specified CaddyFile
+write "Starting Caddy server." & return to logFile
+tell application "Terminal"
+	do script "nohup /opt/homebrew/bin/caddy run --config /Users/mediaserver/Desktop/caddy/CaddyFile > /dev/null 2>&1 &"
+	delay 3
+	quit
+end tell
+
+close access logFile
+
+on waitForVolume(volumePath, logFile)
+	repeat
+		set volumeExists to do shell script ("if [ -d " & quoted form of volumePath & " ]; then echo 'exists'; else echo 'no'; fi")
+		if volumeExists is "exists" then
+			exit repeat
+		else
+			write "Waiting for volume " & volumePath & " to mount." & return to logFile
+			delay 2
+		end if
+	end repeat
+	write "Volume " & volumePath & " is now mounted." & return to logFile
+end waitForVolume
