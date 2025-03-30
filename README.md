@@ -36,13 +36,14 @@ others, so they could skip the hassle. The goals of this implementation are:
 
 1. [Setup RAID](#setup-raid-array)
 2. [Jellyfin](#install-jellyfin)
-3. [Remote Connection](#remote-connection)
+3. [Turn off Sleep](#turn-off-sleep)
+4. [Remote Connection](#remote-connection)
    - [Port Forwarding](#port-forwarding)
    - [Reverse Proxy](#reverse-proxy)
    - [Custom Domain](#custom-domain)
      * [DNS Record](#dns-record)
      * [Reverse Proxy Updates](#reverse-proxy-updates)
-4. [Startup Automation](#startup-automation)
+5. [Startup Automation](#startup-automation)
    - [Write Startup Script](#write-startup-script)
      * [Logging](#logging)
      * [Wait for Volumes](#wait-for-volumes)
@@ -50,8 +51,8 @@ others, so they could skip the hassle. The goals of this implementation are:
      * [Start Caddy](#start-caddy)
    - [Create Launch Agent](#create-launch-agent)
    - [Automatic Log In](#automatic-log-in)
-5. [VNC Remote Management](#vnc-remote-management)
-6. [Monitoring](#monitoring)
+6. [VNC Remote Management](#vnc-remote-management)
+7. [Monitoring](#monitoring)
    1. [Enable Jellyfin Metrics](#enable-jellyfin-metrics)
    2. [Extra Metrics](#extra-metrics)
    3. [Install Tools](#install-tools)
@@ -59,7 +60,7 @@ others, so they could skip the hassle. The goals of this implementation are:
    5. [Configure Grafana](#configure-grafana)
    6. [Create Dashboard](#create-dashboard)
    7. [Update Startup Script](#update-startup-script)
-7. [LiveTV](#livetv)
+8. [LiveTV](#livetv)
 
 ## Setup RAID Array
 
@@ -135,6 +136,14 @@ In this step, we will only install Jellyfin and configure libraries. Remote acce
 5. Navigate to `http://localhost:8096` in your browser.
 6. Follow the initial setup wizard.
    - [Use this guide](https://jellyfin.org/docs/general/server/libraries/) to add libraries instead of creating them during setup.
+
+## Turn off Sleep
+
+The media server won't be much good if it shuts down when not interacted with. 
+
+1. Open the `Settings` app.
+2. Open the `Energy` sections.
+3. Enable `Prevent automatic sleeping when the display is off`.
 
 ## Remote Connection
 
