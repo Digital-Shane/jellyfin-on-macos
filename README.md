@@ -316,7 +316,7 @@ A launch agent is needed to execute the startup script.
    <plist version="1.0">
    <dict>
        <key>Label</key>
-       <string>xyz.harperplus.launch</string>
+       <string>jellyfin.launch</string>
        <key>RunAtLoad</key>
        <true/>
        <key>KeepAlive</key>
@@ -430,7 +430,7 @@ If you want your dashboard to show media library size, connected clients, and ac
             <string>REPLACE-WITH-YOUR-API-KEY</string>
        </dict>
        <key>Label</key>
-       <string>xyz.harperplus.launch</string>
+       <string>jellyfin.launch</string>
        <key>RunAtLoad</key>
        <true/>
        <key>KeepAlive</key>
