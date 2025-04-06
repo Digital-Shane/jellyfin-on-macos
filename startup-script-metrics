@@ -1,4 +1,4 @@
-set logFile to open for access POSIX file "/Users/harperplus/Desktop/caddy/StartupLog.log" with write permission
+set logFile to open for access POSIX file "/Users/mediaserver/Desktop/caddy/StartupLog.log" with write permission
 write "Performing start up." & return to logFile
 
 -- Check that the required volumes exist
@@ -15,7 +15,7 @@ delay 1
 -- Launch the custom Jellyfin metrics exporter
 write "Launching Jelly Exporter" & return to logFile
 tell application "Terminal"
-	do script "nohup /Users/harperplus/Desktop/jellyfin-exporter/jellyfin-exporter > /dev/null 2>&1 &"
+	do script "nohup /Users/mediaserver/go/bin/jellyfin-metrics > /dev/null 2>&1 &"
 	delay 3
 	quit
 end tell
@@ -28,7 +28,7 @@ delay 1
 -- Command to start Caddy with the specified CaddyFile
 write "Starting Caddy server." & return to logFile
 tell application "Terminal"
-	do script "nohup /opt/homebrew/bin/caddy run --config /Users/harperplus/Desktop/caddy/CaddyFile > /dev/null 2>&1 &"
+	do script "nohup /opt/homebrew/bin/caddy run --config /Users/mediaserver/Desktop/caddy/CaddyFile > /dev/null 2>&1 &"
 	delay 3
 	quit
 end tell

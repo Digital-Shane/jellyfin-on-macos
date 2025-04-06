@@ -412,17 +412,12 @@ labels which will balloon the size of your Prometheus data directory.
 If you want your dashboard to show media library size, connected clients, and active streams then install my
 [jelly-metrics](https://github.com/Digital-Shane/jelly-metrics) api.
 
-1. Navigate to the releases page for jelly-metrics and download the tar file for your Mac's architecture.
-2. Extract the executable from the tar file and store it along with your Caddyfile.
-3. Run jelly-metrics via the terminal. If Mac blocks it opening fix that by following these steps.
-   1. Open `Settings`
-   2. Open the `Privacy & Security` settings
-   3. Scroll to the bottom, and click `Allow Anyway`
-   4. Run jelly-metrics via the terminal again, and click `Open Anyway`
-4. Open your Jellyfin UI, click the hamburger icon in the upper left corner, and open the Administration Dashboard.
-5. Scroll down on the left side menu, and select `API Keys`
-6. Click the `+` icon, enter `metrics` for the app name, and click `ok`.
-7. Update the launch agent to contain your api key by adding the `EnvironmentVariables` key and dict like below. Make sure
+1. Install [go](https://go.dev/) via brew if not already installed `brew install go`.
+   * Run `brew upgrade go` if your `go version` is under `1.23.6`.
+2. Open your Jellyfin UI, click the hamburger icon in the upper left corner, and open the Administration Dashboard.
+3. Scroll down on the left side menu, and select `API Keys`
+4. Click the `+` icon, enter `metrics` for the app name, and click `ok`.
+5. Update the launch agent to contain your api key by adding the `EnvironmentVariables` key and dict like below. Make sure
    to replace the string `REPLACE-WITH-YOUR-API-KEY` with the API key you just generated. 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -448,7 +443,7 @@ If you want your dashboard to show media library size, connected clients, and ac
    </dict>
    </plist>
    ```
-8. We will update the startup script at the end when adding all new monitoring tools. 
+6. We will update the startup script at the end when adding all new monitoring tools. 
 
 ## Install Tools
 
@@ -540,7 +535,7 @@ A few updates are required in the startup script to support our monitoring tools
    -- Launch the jelly-metrics metrics exporter
    write "Launching Jelly Metrics" & return to logFile
    tell application "Terminal"
-    	do script "nohup /Users/mediaserver/Desktop/caddy/jelly-metrics > /dev/null 2>&1 &"
+    	do script "nohup /Users/mediaserver/go/bin/jelly-metrics > /dev/null 2>&1 &"
     	delay 3
     	quit
    end tell
