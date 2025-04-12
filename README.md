@@ -160,14 +160,15 @@ based on your router model. Find your router on [portforward.com](https://portfo
 
 It is possible to manage a ssl certificate yourself by generating it and enabling https in Jellyfin, but if you want to enable
 metric collection later you should route incoming connections via a reverse proxy. Using `caddy` as a reverse proxy
-is a great choice as it will generate and rotate your ssl certificate for you. 
+is a great choice as it will generate and rotate your ssl certificate for you. We will use caddy with plugins later in
+this guide, so we will start by building caddy from xcaddy without plugins.
 
 1. Open `Terminal`
-2. [Install brew](https://docs.brew.sh/Installation) if you have not already. 
-3. Install caddy `brew install caddy`.
-4. In a location of your choosing, create file called "Caddyfile": `touch > Caddyfile`.
-   * I hold most items in a desktop folder called `caddy`. My Mac is only used as a media server, so I don't mind keeping things easy to reach.
-5. Open the Caddyfile with the text editor of your choice and enter the content below.
+2. Install xcaddy `go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest`.
+3. Create a folder on your desktop named `caddy` and enter it `mkdir ~/Desktop/caddy && cd ~/Desktop/caddy`
+4. Build caddy with no plugins with `xcaddy build`
+5. Create file called "Caddyfile": `touch > Caddyfile`.
+6. Open the Caddyfile with the text editor of your choice and enter the content below.
    ```txt
    0.0.0.0 {
    	@metrics {
@@ -178,8 +179,8 @@ is a great choice as it will generate and rotate your ssl certificate for you.
    	reverse_proxy 127.0.0.1:8096
    }
    ```
-6. Replace `0.0.0.0` with your public IP address.
-7. Run `caddy start --config Caddyfile` in the same directory as your Caddyfile.
+7. Replace `0.0.0.0` with your public IP address.
+8. Run `caddy start --config Caddyfile` in the same directory as your Caddyfile.
 
 You should now be able to connect to your server by entering your public IP address in the server field of the Jellyfin app.
 
