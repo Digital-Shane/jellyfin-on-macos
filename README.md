@@ -248,7 +248,7 @@ To increase security you can add geo filtering to reject traffic from countries 
     	}
     	respond @metrics 403
     
-    	@geofilter { # Create a new filer using a geolocation filter
+    	@geofilter { # Create a new filer using a maxmind_geolocation plugin
     		maxmind_geolocation {
     			db_path "YOUR_GATHERED_MMDB_FILE_PATH" # Replace with the path to your mmdb file
     			allow_countries US # Update if the United States is not your location
