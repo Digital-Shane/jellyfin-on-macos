@@ -34,11 +34,7 @@ delay 1
 
 -- Command to start Caddy with the specified CaddyFile
 write "Starting Caddy server." & return to logFile
-tell application "Terminal"
-	do script "nohup /opt/homebrew/bin/caddy run --config /Users/mediaserver/Desktop/caddy/CaddyFile > /dev/null 2>&1 &"
-	delay 3
-	quit
-end tell
+do shell script "/Users/mediaserver/Desktop/caddy/caddy start --config /Users/mediaserver/Desktop/caddy/CaddyFile"
 
 close access logFile
 
