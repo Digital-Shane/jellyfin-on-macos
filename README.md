@@ -41,8 +41,6 @@ others, so they could skip the hassle. The goals of this implementation are:
    - [Port Forwarding](#port-forwarding)
    - [Reverse Proxy](#reverse-proxy)
    - [Custom Domain](#custom-domain)
-     * [DNS Record](#dns-record)
-     * [Reverse Proxy Updates](#reverse-proxy-updates)
 5. [Startup Automation](#startup-automation)
    - [Write Startup Script](#write-startup-script)
      * [Logging](#logging)
@@ -160,14 +158,15 @@ based on your router model. Find your router on [portforward.com](https://portfo
 
 It is possible to manage a ssl certificate yourself by generating it and enabling https in Jellyfin, but if you want to enable
 metric collection later you should route incoming connections via a reverse proxy. Using `caddy` as a reverse proxy
-is a great choice as it will generate and rotate your ssl certificate for you. 
+is a great choice as it will generate and rotate your ssl certificate for you. We will use caddy with plugins later in
+this guide, so we will start by building caddy from xcaddy without plugins.
 
 1. Open `Terminal`
-2. [Install brew](https://docs.brew.sh/Installation) if you have not already. 
-3. Install caddy `brew install caddy`.
-4. In a location of your choosing, create file called "Caddyfile": `touch > Caddyfile`.
-   * I hold most items in a desktop folder called `caddy`. My Mac is only used as a media server, so I don't mind keeping things easy to reach.
-5. Open the Caddyfile with the text editor of your choice and enter the content below.
+2. Install xcaddy `go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest`.
+3. Create a folder on your desktop named `caddy` and enter it `mkdir ~/Desktop/caddy && cd ~/Desktop/caddy`
+4. Build caddy with no plugins with `xcaddy build`
+5. Create file called "Caddyfile": `touch > Caddyfile`.
+6. Open the Caddyfile with the text editor of your choice and enter the content below.
    ```txt
    0.0.0.0 {
    	@metrics {
@@ -178,8 +177,8 @@ is a great choice as it will generate and rotate your ssl certificate for you.
    	reverse_proxy 127.0.0.1:8096
    }
    ```
-6. Replace `0.0.0.0` with your public IP address.
-7. Run `caddy start --config Caddyfile` in the same directory as your Caddyfile.
+7. Replace `0.0.0.0` with your public IP address.
+8. Run `caddy start --config Caddyfile` in the same directory as your Caddyfile.
 
 You should now be able to connect to your server by entering your public IP address in the server field of the Jellyfin app.
 
@@ -188,28 +187,40 @@ You should now be able to connect to your server by entering your public IP addr
 Using your IP address works, but a domain name is much easier to remember. Follow this section if you've purchased a
 domain to link to your media server.
 
-#### DNS Record
+Only a single DNS `A Record` needs to be created to direct your hostname to your home IP address. To do this automatically
+we will use the [dynamic-dns](https://github.com/mholt/caddy-dynamicdns) caddy plugin. For this to work we need to also
+install the complimentary DNS plugin for your DNS provider. In this guide, I will use Cloudflare and the respective
+[cloudflare-dns](https://github.com/caddy-dns/cloudflare) plugin. If you use a different DNS provider, search [the caddy-dns GitHub group](https://github.com/caddy-dns)
+to find the respective plugin for your provider. 
 
-Only a single DNS `A Record` needs to be created to direct your hostname to your home IP address. This will differ based
-on your DNS provider. I use Digital Ocean for a handful of things, so I manage my domain there too. In the Digital
-Ocean Control Panel the result looks like this:
-
-<img width="1205" alt="image" src="https://github.com/user-attachments/assets/136d68b9-f126-42ae-9638-29f98669989f" />
-
-#### Reverse Proxy Updates
-
-Replace the IP address in your Caddyfile with your domain name:
-
-```txt
-example.com {
-   @metrics {
-      path /metrics*
+1. Change into the directory holding our caddy executable `cd ~/Desktop/caddy`
+2. Rebuild caddy with the dynamic-dns plugin and DNS provider plugin
+   - `xcaddy build --with github.com/caddy-dns/cloudflare --with github.com/mholt/caddy-dynamicdns`
+3. Replace the IP address in your Caddyfile with your domain name, and add a new global configuration block at the top.
+   If you are not using Cloudflare for DNS, replace the `provider` configuration for the configuration your provider requires.
+   Make sure to replace `example.com` with your domain in both locations!
+   ```txt
+   {
+       dynamic_dns {
+           provider cloudflare {env.CLOUDFLARE_API_TOKEN}
+           domains {
+               example.com
+           }
+           versions ipv4
+       }
    }
-   respond @metrics 403
-
-   reverse_proxy 127.0.0.1:8096
-}
-```
+   example.com {
+      @metrics {
+         path /metrics*
+      }
+      respond @metrics 403
+   
+      reverse_proxy 127.0.0.1:8096
+   }
+   ```
+   
+Run `export CLOUDFLARE_API_TOKEN="TOKEN_VALUE" && caddy run --config Caddyfile` in the same directory as your Caddyfile
+and observe caddy creating your DNS A record. You should now be able to connect to your server via domain name.
 
 ## Startup Automation
 
@@ -283,19 +294,12 @@ delay 1
 
 #### Start Caddy
 
-If you have implemented Caddy as your reverse proxy, that can now be started. In this block of code I launch a terminal
-to nohup launch caddy. This is required for the caddy process to be properly disconnected from the script's ownership.
-For some odd reason, `do shell script "/opt/homebrew/bin/caddy run --config CaddyFile"` **is not sufficient** and will
-result in caddy exiting when the startup script terminates. Launching a terminal to run the nohup command gets around this issue. 
+If you have implemented Caddy as your reverse proxy, that can now be started.
 
 ```applescript
 -- Command to start Caddy with the specified CaddyFile
 write "Starting Caddy server." & return to logFile
-tell application "Terminal"
-	do script "nohup /opt/homebrew/bin/caddy run --config /Users/mediaserver/Desktop/caddy/CaddyFile > /dev/null 2>&1 &"
-	delay 3
-	quit
-end tell
+do shell script "/Users/mediaserver/Desktop/caddy/caddy start --config /Users/mediaserver/Desktop/caddy/CaddyFile"
 ```
 
 Save this script in a place you will remember. I store mine along with my Caddyfile. You can view the [full script here](./startup-script-basic).
@@ -309,12 +313,18 @@ A launch agent is needed to execute the startup script.
    * If the `LaunchAgents` directory does not exist in `Library`, create and enter it with `mkdir LaunchAgents && cd LaunchAgents`.
 3. Create a new file for the launch agent with `touch jellyfin.launch.plist`
 4. Open the file with the text editor of your choosing and enter the contents below making sure to edit the startup
-   script file path to the location you saved your script.
+   script file path to the location you saved your script. Also, enter the API key required for dns updates within the
+   `EnvironmentVariables` dictionary.
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
    <plist version="1.0">
    <dict>
+       <key>EnvironmentVariables</key>
+       <dict>
+            <key>CLOUDFLARE_API_TOKEN</key>
+            <string>REPLACE-WITH-YOUR-API-KEY</string>
+       </dict>
        <key>Label</key>
        <string>jellyfin.launch</string>
        <key>RunAtLoad</key>
@@ -418,7 +428,7 @@ If you want your dashboard to show media library size, connected clients, and ac
 3. Scroll down on the left side menu, and select `API Keys`
 4. Click the `+` icon, enter `metrics` for the app name, and click `ok`.
 5. Update the launch agent to contain your api key by adding the `EnvironmentVariables` key and dict like below. Make sure
-   to replace the string `REPLACE-WITH-YOUR-API-KEY` with the API key you just generated. 
+   to replace the string `REPLACE-WITH-YOUR-JELLYFIN-API-KEY` with the API key you just generated. Keep your DNS API key!
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -426,8 +436,10 @@ If you want your dashboard to show media library size, connected clients, and ac
    <dict>
         <key>EnvironmentVariables</key>
         <dict>
-            <key>JELLYFIN_TOKEN</key>
+            <key>CLOUDFLARE_API_TOKEN</key>
             <string>REPLACE-WITH-YOUR-API-KEY</string>
+            <key>JELLYFIN_TOKEN</key>
+            <string>REPLACE-WITH-YOUR-JELLYFIN-API-KEY</string>
        </dict>
        <key>Label</key>
        <string>jellyfin.launch</string>
@@ -529,7 +541,10 @@ Next connect Grafana to the Prometheus data store.
 A few updates are required in the startup script to support our monitoring tools.
 
 1. Open the startup script in the `ScriptEditor`.
-2. After launching Jellyfin, launch `jelly-metrics` using the same trick as caddy to disown the process. Skip this step
+2. After launching Jellyfin, launch `jelly-metrics`. In this block of code I launch a terminal
+   to nohup launch `jelly-metrics`. This is required for the process to be properly disconnected from the script's ownership.
+   For some odd reason, `do shell script` **is not sufficient** and will result in `jelly-metrics` exiting when the startup
+   script terminates. Launching a terminal to run the nohup command gets around this issue. Skip this step
    If you opted to not use jelly metrics.
    ```applescript
    -- Launch the jelly-metrics metrics exporter
