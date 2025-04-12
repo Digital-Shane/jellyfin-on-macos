@@ -41,6 +41,7 @@ others, so they could skip the hassle. The goals of this implementation are:
    - [Port Forwarding](#port-forwarding)
    - [Reverse Proxy](#reverse-proxy)
    - [Custom Domain](#custom-domain)
+   - [Geo Filtering](#geo-filtering)
 5. [Startup Automation](#startup-automation)
    - [Write Startup Script](#write-startup-script)
      * [Logging](#logging)
@@ -196,20 +197,18 @@ to find the respective plugin for your provider.
 1. Change into the directory holding our caddy executable `cd ~/Desktop/caddy`
 2. Rebuild caddy with the dynamic-dns plugin and DNS provider plugin
    - `xcaddy build --with github.com/caddy-dns/cloudflare --with github.com/mholt/caddy-dynamicdns`
-3. Replace the IP address in your Caddyfile with your domain name, and add a new global configuration block at the top.
-   If you are not using Cloudflare for DNS, replace the `provider` configuration for the configuration your provider requires.
-   Make sure to replace `example.com` with your domain in both locations!
+3. Replace the IP address in your `Caddyfile` with your domain name, and add a new global configuration block at the top.
    ```txt
-   {
+   { # Global Configuation Block.
        dynamic_dns {
-           provider cloudflare {env.CLOUDFLARE_API_TOKEN}
+           provider cloudflare {env.CLOUDFLARE_API_TOKEN} # If not using Cloudflare, use the configuration for your DNS provider.
            domains {
-               example.com
+               example.com # Place your domain here.
            }
            versions ipv4
        }
    }
-   example.com {
+   example.com { # Replace your IP address with your domain.
       @metrics {
          path /metrics*
       }
@@ -221,6 +220,48 @@ to find the respective plugin for your provider.
    
 Run `export CLOUDFLARE_API_TOKEN="TOKEN_VALUE" && caddy run --config Caddyfile` in the same directory as your Caddyfile
 and observe caddy creating your DNS A record. You should now be able to connect to your server via domain name.
+
+### Geo Filtering
+
+To increase security you can add geo filtering to reject traffic from countries you don't expect.
+
+1. The [geolocation plugin](github.com/porech/caddy-maxmind-geolocation) must be added to xcaddy build, rerun the build with this new plugin.
+   - `xcaddy build --with github.com/caddy-dns/cloudflare --with github.com/mholt/caddy-dynamicdns --with github.com/porech/caddy-maxmind-geolocation`
+2. [Sign up for maxmind](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/) to get access to the geo ip database.
+3. After confirming your email and logging into your new account select `Download Databases`.
+4. Select the `Download GZIP` on the `GeoLite2 Country` row of the database table.
+5. Extract the downloaded gzip file, and move the `GeoLite2-Country.mmdb` file into the caddy folder on your Desktop.
+6. Gather file location with `cd ~/Desktop/caddy && echo "$(pwd)/GeoLite2-Country.mmdb"`
+7. Update `Caddyfile` by creating a geo filer and applying it to the reverse proxy. Update the `allow_countries` input to your liking.
+   ```
+   { # If using dynamic dns
+    	dynamic_dns {
+    		provider cloudflare {env.CLOUDFLARE_API_TOKEN}
+    		domains {
+    			example.com
+    		}
+    	}
+    }
+    example.com {
+    	@metrics {
+    		path /metrics*
+    	}
+    	respond @metrics 403
+    
+    	@geofilter { # Create a new filer using a geolocation filter
+    		maxmind_geolocation {
+    			db_path "YOUR_GATHERED_MMDB_FILE_PATH" # Replace with the path to your mmdb file
+    			allow_countries US # Update if the United States is not your location
+    		}
+    	}
+        
+        # Update the reverse proxy to use the new geo filter!
+    	reverse_proxy @geofilter 127.0.0.1:8096
+    }
+   ```
+
+Run `export CLOUDFLARE_API_TOKEN="TOKEN_VALUE" && caddy run --config Caddyfile` in the same directory as your Caddyfile
+and make sure you can still connect to your server. You may use a VPN to test connection outside your selected countries.
 
 ## Startup Automation
 
