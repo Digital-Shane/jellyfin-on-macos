@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2025-04-12
+### Updated
+* Automated DNS A record creation.
+* Added CHANGELOG.md
+* Updated startup script to use `caddy start` over `caddy run`. 
+
 ## 2025-04-05
 ### Updated
 * jelly-metrics install instructions to use `go install`.
