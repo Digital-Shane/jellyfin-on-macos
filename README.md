@@ -465,10 +465,11 @@ If you want your dashboard to show media library size, connected clients, and ac
 
 1. Install [go](https://go.dev/) via brew if not already installed `brew install go`.
    * Run `brew upgrade go` if your `go version` is under `1.23.6`.
-2. Open your Jellyfin UI, click the hamburger icon in the upper left corner, and open the Administration Dashboard.
-3. Scroll down on the left side menu, and select `API Keys`
-4. Click the `+` icon, enter `metrics` for the app name, and click `ok`.
-5. Update the launch agent to contain your api key by adding the `EnvironmentVariables` key and dict like below. Make sure
+2. Install jelly-metrics with `go install github.com/Digital-Shane/jelly-metrics@latest`
+3. Open your Jellyfin UI, click the hamburger icon in the upper left corner, and open the Administration Dashboard.
+4. Scroll down on the left side menu, and select `API Keys`
+5. Click the `+` icon, enter `metrics` for the app name, and click `ok`.
+6. Update the launch agent to contain your api key by adding the `EnvironmentVariables` key and dict like below. Make sure
    to replace the string `REPLACE-WITH-YOUR-JELLYFIN-API-KEY` with the API key you just generated. Keep your DNS API key!
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -496,7 +497,7 @@ If you want your dashboard to show media library size, connected clients, and ac
    </dict>
    </plist>
    ```
-6. We will update the startup script at the end when adding all new monitoring tools. 
+7. We will update the startup script at the end when adding all new monitoring tools. 
 
 ## Install Tools
 
