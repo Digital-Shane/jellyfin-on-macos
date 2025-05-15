@@ -60,6 +60,7 @@ others, so they could skip the hassle. The goals of this implementation are:
    6. [Create Dashboard](#create-dashboard)
    7. [Update Startup Script](#update-startup-script)
 8. [LiveTV](#livetv)
+9. [Star History](#star-history)
 
 ## Setup RAID Array
 
@@ -627,3 +628,7 @@ delay 1
 ```
 
 You can view the [full script with metric handling and ErsatzTV here](./startup-script-livetv).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Digital-Shane/jellyfin-on-macos&type=Date)](https://www.star-history.com/#Digital-Shane/jellyfin-on-macos&Date)
