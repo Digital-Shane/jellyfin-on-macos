@@ -98,7 +98,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
-            "axisSoftMin": 4,
+            "axisSoftMax": 5,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "barWidthFactor": 1,
             "drawStyle": "bars",
@@ -165,7 +166,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "count by(username) (rate(jellyfin_stream_count[5m]))",
+          "expr": "count by(username) (rate(jellyfin_stream_count[1m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -292,54 +293,73 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "System uptime",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 1,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "movie"
+            },
+            "properties": [
               {
-                "color": "red",
-                "value": 80
+                "id": "displayName",
+                "value": "Movies"
               }
             ]
           },
-          "unit": "s"
-        },
-        "overrides": []
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "show"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Shows"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "show_episode"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Episodes"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 4,
         "x": 20,
         "y": 0
       },
-      "id": 15,
-      "maxDataPoints": 100,
+      "id": 331,
       "options": {
-        "colorMode": "none",
-        "graphMode": "none",
+        "colorMode": "value",
+        "graphMode": "area",
         "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
@@ -355,21 +375,133 @@
       "pluginVersion": "11.3.1",
       "targets": [
         {
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg by(type) (jellyfin_media_count{type=~\"episodes\"})",
+          "format": "time_series",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false,
           "datasource": {
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "node_time_seconds{} - node_boot_time_seconds{}",
-          "instant": true,
-          "intervalFactor": 1,
-          "range": false,
-          "refId": "A",
-          "step": 240
+          }
         }
       ],
-      "title": "Uptime",
+      "title": "Episode Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "movie"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Movies"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "show"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Shows"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "show_episode"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Episodes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 4
+      },
+      "id": 332,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg by(type) (jellyfin_media_count{type=~\"series\"})",
+          "format": "time_series",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        }
+      ],
+      "title": "Show Count",
       "type": "stat"
     },
     {
@@ -388,6 +520,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 5,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "barWidthFactor": 1,
             "drawStyle": "bars",
@@ -456,7 +590,7 @@
       "targets": [
         {
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "expr": "max by(username) (jellyfin_connected_clients_count)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -587,53 +721,15 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "purple",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -642,7 +738,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "movies"
+              "options": "movie"
             },
             "properties": [
               {
@@ -654,7 +750,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "series"
+              "options": "show"
             },
             "properties": [
               {
@@ -666,7 +762,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "episodes"
+              "options": "show_episode"
             },
             "properties": [
               {
@@ -678,33 +774,36 @@
         ]
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 4,
         "x": 20,
-        "y": 6
+        "y": 8
       },
-      "id": 330,
+      "id": 333,
       "options": {
-        "legend": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "11.3.1",
       "targets": [
         {
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "avg by(type) (jellyfin_media_count{type=~\"movies|series|episodes\"})",
+          "expr": "avg by(type) (jellyfin_media_count{type=~\"movies\"})",
           "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -719,8 +818,8 @@
           }
         }
       ],
-      "title": "Media Count",
-      "type": "timeseries"
+      "title": "Movie Count",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -3158,6 +3257,6 @@
   "timezone": "browser",
   "title": "Jellyfin",
   "uid": "rYdwdlPff",
-  "version": 38,
+  "version": 0,
   "weekStart": ""
 }
