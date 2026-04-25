@@ -441,8 +441,7 @@ while providing long term metrics and dashboard displays for:
 
 _Usernames cleared out for privacy_
 
-![dashboard-1](./dashboard-1.png)
-![dashboard-2](./dashboard-2.png)
+![dashboard](./dashboard.png)
 
 ## Enable Jellyfin Metrics
 
