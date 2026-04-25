@@ -2,9 +2,12 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-25
+### Added
+* Instructions for adding media directories to spotlight privacy to prevent unnecessary disk activity.
 ### Updated
 * Metrics section to include per-process CPU and Memory metrics for macOS.
 * Grafana dashboard to include per-process CPU and Memory charts.
+* Misspelled words to correct spelling.
 
 
 ## 2025-06-08
