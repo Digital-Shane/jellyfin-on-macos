@@ -23,7 +23,7 @@ end tell
 -- Launch the custom macOS process metrics exporter
 logMessage(logFile, "Launching macOS process exporter")
 tell application "Terminal"
-	do script "nohup /Users/harperplus/go/bin/macos-process-exporter --min-cpu-percent 0.1  >> /Users/harperplus/Desktop/caddy/StartupLog.log 2>&1 &"
+	do script "nohup /Users/mediaserver/go/bin/macos-process-exporter --min-cpu-percent 0.1  >> /Users/mediaserver/Desktop/caddy/StartupLog.log 2>&1 &"
 	delay 3
 	quit
 end tell
