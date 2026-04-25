@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2026-04-25
+### Updated
+* Metrics section to include per-process CPU and Memory metrics for macOS.
+* Grafana dashboard to include per-process CPU and Memory charts.
+
+
 ## 2025-06-08
 ### Added
 * Three new charts on the grafana dashboard to better show the growth of movies, shows, and episodes over time.
@@ -11,9 +17,11 @@ All notable changes to this project will be documented in this file.
 ### Removed
 * Uptime chart on dashboard to make room for new charts.
 
+
 ## 2025-04-12 (PM)
 ### Updated
 * Added Geo Filtering section.
+
 
 ## 2025-04-12
 ### Updated
@@ -21,15 +29,17 @@ All notable changes to this project will be documented in this file.
 * Added CHANGELOG.md
 * Updated startup script to use `caddy start` over `caddy run`. 
 
+
 ## 2025-04-05
 ### Updated
 * jelly-metrics install instructions to use `go install`.
+
 
 ## 2025-04-01
 ### Added
 * CONTRIBUTING guide.
 
-## 2025-03-27
 
-Initial Release
+## 2025-03-27
+* Initial Release
  
