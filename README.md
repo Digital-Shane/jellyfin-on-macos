@@ -431,8 +431,8 @@ while providing long term metrics and dashboard displays for:
 * In progress downloads
 * Media count
 * LiveTV Streams
-* CPU
-* Memory
+* CPU (Overall and per-process)
+* Memory (Overall and per-process)
 * Network
 * Storage
 * Uptime
@@ -500,6 +500,12 @@ If you want your dashboard to show media library size, connected clients, and ac
    ```
 7. We will update the startup script at the end when adding all new monitoring tools. 
 
+## Per-Process CPU and Memory
+
+macOS does not use `/proc` so the standard linux process-exporter does not work. I built a custom exporter that supports the
+macOS by using Shirou's gopsutil library. If you want detailed CPU and Memory metrics for your server install it with:
+`go install github.com/Digital-Shane/macos-process-exporter@latest`
+
 ## Install Tools
 
 The remaining tools may be installed via brew. Run the following in `Terminal`.
@@ -550,6 +556,9 @@ Two files must be edited to configure Prometheus.
    - job_name: "jellyfin-metrics" # Remove this job if not using jelly-metrics!
      static_configs:
        - targets: ["localhost:8097"]
+   - job_name: "macos-process-metrics" # Remove this job if not using macos-process-exporter!
+     static_configs:
+       - targets: ["localhost:9105"]
    ```
 6. After saving the file reload Prometheus with `brew services restart prometheus`.
 

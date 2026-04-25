@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2026-04-25
+### Updated
+* Metrics section to include per-process CPU and Memory metrics for macOS.
+
 ## 2025-06-08
 ### Added
 * Three new charts on the grafana dashboard to better show the growth of movies, shows, and episodes over time.

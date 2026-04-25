@@ -20,6 +20,14 @@ tell application "Terminal"
 	quit
 end tell
 
+-- Launch the custom macOS process metrics exporter
+logMessage(logFile, "Launching macOS process exporter")
+tell application "Terminal"
+	do script "nohup /Users/harperplus/go/bin/macos-process-exporter --min-cpu-percent 0.1  >> /Users/harperplus/Desktop/caddy/StartupLog.log 2>&1 &"
+	delay 3
+	quit
+end tell
+
 -- Launch Promethous Now that Volumes are mounted and metric sources have started
 write "Restarting Promethous" & return to logFile
 do shell script "/opt/homebrew/bin/brew services restart prometheus"
