@@ -34,15 +34,17 @@ others, so they could skip the hassle. The goals of this implementation are:
 
 #### Table of Contents
 
-1. [Setup RAID](#setup-raid-array)
-2. [Jellyfin](#install-jellyfin)
-3. [Turn off Sleep](#turn-off-sleep)
-4. [Remote Connection](#remote-connection)
+1. [Setup RAID Array](#setup-raid-array)
+2. [Create Folder Structure](#create-folder-structure)
+   - [Exclude Media From Spotlight](#exclude-media-from-spotlight)
+3. [Install Jellyfin](#install-jellyfin)
+4. [Turn off Sleep](#turn-off-sleep)
+5. [Remote Connection](#remote-connection)
    - [Port Forwarding](#port-forwarding)
    - [Reverse Proxy](#reverse-proxy)
    - [Custom Domain](#custom-domain)
    - [Geo Filtering](#geo-filtering)
-5. [Startup Automation](#startup-automation)
+6. [Startup Automation](#startup-automation)
    - [Write Startup Script](#write-startup-script)
      * [Logging](#logging)
      * [Wait for Volumes](#wait-for-volumes)
@@ -50,17 +52,20 @@ others, so they could skip the hassle. The goals of this implementation are:
      * [Start Caddy](#start-caddy)
    - [Create Launch Agent](#create-launch-agent)
    - [Automatic Log In](#automatic-log-in)
-6. [VNC Remote Management](#vnc-remote-management)
-7. [Monitoring](#monitoring)
-   1. [Enable Jellyfin Metrics](#enable-jellyfin-metrics)
-   2. [Extra Metrics](#extra-metrics)
-   3. [Install Tools](#install-tools)
-   4. [Configure Prometheus](#configure-prometheus)
-   5. [Configure Grafana](#configure-grafana)
-   6. [Create Dashboard](#create-dashboard)
-   7. [Update Startup Script](#update-startup-script)
-8. [LiveTV](#livetv)
-9. [Star History](#star-history)
+7. [Limit macOS System Media Scans](#limit-macos-system-media-scans)
+8. [VNC Remote Management](#vnc-remote-management)
+   - [Controlling The Server Outside Your Local Network](#controlling-the-server-outside-your-local-network)
+9. [Monitoring](#monitoring)
+   - [Enable Jellyfin Metrics](#enable-jellyfin-metrics)
+   - [Extra Metrics](#extra-metrics)
+   - [Per-Process CPU and Memory](#per-process-cpu-and-memory)
+   - [Install Tools](#install-tools)
+   - [Configure Prometheus](#configure-prometheus)
+   - [Configure Grafana](#configure-grafana)
+   - [Create Dashboard](#create-dashboard)
+   - [Update Startup Script](#update-startup-script)
+10. [LiveTV](#livetv)
+11. [Star History](#star-history)
 
 ## Setup RAID Array
 
@@ -419,6 +424,24 @@ login to handle restarts completely. This can't be done if FileVault is enabled.
 4. Enter the password used for login.
 
 The server may now restart and have Jellyfin and Caddy elegantly resume operation. 
+
+## Limit macOS System Media Scans
+
+Even with Spotlight disabled, macOS may still scan large media libraries with `photoanalysisd`, `mediaanalysisd`, and
+`mediaanalysisd-access`. These are macOS background services that analyze photos, videos, and other media for features like
+faces, objects, scenes, text, memories, and search indexing. Once enough content is loaded these processes can consume
+around 20% CPU. Removing these processes outright would require disabling System Integrity Protection (SIP) and deleting
+the respective process plist files, but there are warnings online about this breaking some system components, and it would
+require keeping SIP disabled. Not a good solution. To solve this without requiring readers to purchase anything, I built
+[OpenTamer](https://github.com/Digital-Shane/OpenTamer), a completely free and open source AppTamer replacement.
+
+1. Download the latest `OpenTamer-...-macos-arm64.zip` from the [OpenTamer releases page](https://github.com/Digital-Shane/OpenTamer/releases).
+2. Unzip it, move `OpenTamer.app` to `Applications`, and launch it.
+3. Open OpenTamer from the menu bar, open `Preferences` > `General`, and enable `Launch at Login`.
+4. In `All Processes`, find `mediaanalysisd`, open `Limit CPU...`, and select `0.01%`.
+5. Repeat the same rule for `mediaanalysisd-access` and `photoanalysisd`.
+
+OpenTamer saves these rules and reapplies them as the processes restart so the scanners stay suppressed.
 
 # VNC Remote Management
 
