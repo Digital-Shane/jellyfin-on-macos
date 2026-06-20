@@ -28,8 +28,8 @@ tell application "Terminal"
 	quit
 end tell
 
--- Launch Promethous Now that Volumes are mounted and metric sources have started
-write "Restarting Promethous" & return to logFile
+-- Launch Prometheus Now that Volumes are mounted and metric sources have started
+write "Restarting Prometheus" & return to logFile
 do shell script "/opt/homebrew/bin/brew services restart prometheus"
 delay 1
 

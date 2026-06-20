@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+
+## 2026-06-20
+### Added
+* Instructions for adding media directories to spotlight privacy to prevent unnecessary disk activity.
+* Instructions for suppressing CPU usage of macOS media scanning processes.
+### Updated
+* Misspelled words to correct spelling.
+
+
 ## 2026-04-25
 ### Updated
 * Metrics section to include per-process CPU and Memory metrics for macOS.
