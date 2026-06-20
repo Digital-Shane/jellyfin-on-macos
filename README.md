@@ -425,7 +425,7 @@ login to handle restarts completely. This can't be done if FileVault is enabled.
 
 The server may now restart and have Jellyfin and Caddy elegantly resume operation. 
 
-## Limit macOS System Media Scans
+# Limit macOS System Media Scans
 
 Even with Spotlight disabled, macOS may still scan large media libraries with `photoanalysisd`, `mediaanalysisd`, and
 `mediaanalysisd-access`. These are macOS background services that analyze photos, videos, and other media for features like
