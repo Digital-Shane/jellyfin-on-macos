@@ -13,6 +13,15 @@ end tell
 write "Jellyfin Launched." & return to logFile
 delay 1
 
+-- Start Podman and CrowdSec
+write "Starting Podman machine." & return to logFile
+do shell script "/opt/homebrew/bin/podman machine start || true"
+delay 5
+
+write "Starting CrowdSec container." & return to logFile
+do shell script "/opt/homebrew/bin/podman start crowdsec || true"
+delay 2
+
 -- Command to start Caddy with the specified CaddyFile
 write "Starting Caddy server." & return to logFile
 do shell script "/Users/mediaserver/Desktop/caddy/caddy start --config /Users/mediaserver/Desktop/caddy/CaddyFile"
