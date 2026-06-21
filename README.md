@@ -44,11 +44,13 @@ others, so they could skip the hassle. The goals of this implementation are:
    - [Reverse Proxy](#reverse-proxy)
    - [Custom Domain](#custom-domain)
    - [Geo Filtering](#geo-filtering)
+   - [CrowdSec Filtering](#crowdsec-filtering)
 6. [Startup Automation](#startup-automation)
    - [Write Startup Script](#write-startup-script)
      * [Logging](#logging)
      * [Wait for Volumes](#wait-for-volumes)
      * [Start Jellyfin](#start-jellyfin)
+     * [Start CrowdSec](#start-crowdsec)
      * [Start Caddy](#start-caddy)
    - [Create Launch Agent](#create-launch-agent)
    - [Automatic Log In](#automatic-log-in)
@@ -279,13 +281,106 @@ To increase security you can add geo filtering to reject traffic from countries 
     		}
     	}
         
-        # Update the reverse proxy to use the new geo filter!
+      # Update the reverse proxy to use the new geo filter!
     	reverse_proxy @geofilter 127.0.0.1:8096
     }
    ```
 
 Run `export CLOUDFLARE_API_TOKEN="TOKEN_VALUE" && caddy run --config Caddyfile` in the same directory as your Caddyfile
 and make sure you can still connect to your server. You may use a VPN to test connection outside your selected countries.
+
+### CrowdSec Filtering
+
+Geo filtering blocks broad regions, but [CrowdSec](https://www.crowdsec.net/) can add another layer by blocking IPs that
+CrowdSec has flagged from local Caddy logs or community decisions. This uses the free open-source CrowdSec engine; you
+do not need a paid account.
+
+1. Install Podman with `brew install podman`. CrowdSec's security engine is not compiled for macOS, so it runs in a
+   Linux container. If you prefer Docker Desktop, replace `podman` with `docker` in the container commands below.
+2. Start the Podman machine. 
+   - `podman machine init && podman machine start`
+   - `podman info`
+3. The [CrowdSec Caddy bouncer](https://github.com/hslatman/caddy-crowdsec-bouncer) must be added to xcaddy build. If
+   you followed the previous sections, rerun the build with this new plugin.
+   - `xcaddy build --with github.com/caddy-dns/cloudflare --with github.com/mholt/caddy-dynamicdns --with github.com/porech/caddy-maxmind-geolocation --with github.com/hslatman/caddy-crowdsec-bouncer/http`
+4. Create an access log file and a CrowdSec acquisition file.
+   - `cd ~/Desktop/caddy && touch access.log && touch crowdsec-acquis.yaml`
+5. Open `crowdsec-acquis.yaml` and enter the content below.
+   ```yaml
+   filenames:
+     - /var/log/caddy/access.log
+   labels:
+     type: caddy
+   ```
+6. Start the CrowdSec container with the Caddy collection installed. This keeps the local API private to your Mac and
+   mounts the caddy folder read-only so CrowdSec can read `access.log`.
+   ```txt
+   podman run -d --name crowdsec \
+     --restart unless-stopped \
+     -p 127.0.0.1:8080:8080 \
+     -e COLLECTIONS="crowdsecurity/caddy" \
+     -v crowdsec-config:/etc/crowdsec \
+     -v crowdsec-db:/var/lib/crowdsec/data \
+     -v ~/Desktop/caddy/crowdsec-acquis.yaml:/etc/crowdsec/acquis.yaml:ro \
+     -v ~/Desktop/caddy:/var/log/caddy:ro \
+     docker.io/crowdsecurity/crowdsec:latest
+   ```
+7. Generate the bouncer key Caddy will use to talk to CrowdSec.
+   - `podman exec crowdsec cscli bouncers add caddy-bouncer`
+   - The command will output a new API key. It should look similar to the example below.
+     ```txt
+     API key for 'caddy-bouncer':
+
+        1234567890abcdefghijklmnopqrstuvwxyz
+
+     Please keep this key since you will not be able to retrieve it!
+     ```
+   - Save this value. It is the `CROWDSEC_API_KEY` used by the Caddyfile, the manual `caddy run` command, and the
+     launch agent below.
+8. Gather your access log location with `cd ~/Desktop/caddy && echo "$(pwd)/access.log"`
+9. Update `Caddyfile` by adding the CrowdSec global configuration, enabling the bouncer inside the site, and writing
+   Caddy access logs. Replace `YOUR_CADDY_LOG_FILE_PATH` with the path gathered in the previous step.
+   ```txt
+   {
+        # Setup the crowdsec api and force caddy to use it first.
+        order crowdsec first
+        crowdsec {
+            api_url http://127.0.0.1:8080
+            api_key {env.CROWDSEC_API_KEY}
+        }
+        dynamic_dns {
+            provider cloudflare {env.CLOUDFLARE_API_TOKEN}
+            domains {
+                example.com
+            }
+        }
+    }
+    example.com {
+        @metrics {
+            path /metrics*
+        }
+        respond @metrics 403
+
+        log {
+            output file "YOUR_CADDY_LOG_FILE_PATH"
+        }
+
+        crowdsec
+
+        @geofilter {
+            maxmind_geolocation {
+                db_path "YOUR_GATHERED_MMDB_FILE_PATH"
+                allow_countries US
+            }
+        }
+
+        reverse_proxy @geofilter 127.0.0.1:8096
+    }
+   ```
+
+Run `export CLOUDFLARE_API_TOKEN="TOKEN_VALUE" && export CROWDSEC_API_KEY="BOUNCER_KEY_VALUE" && caddy run --config Caddyfile`
+in the same directory as your Caddyfile and make sure you can still connect to your server. If you skipped Geo Filtering,
+remove `@geofilter` from the `reverse_proxy` line.
 
 ## Startup Automation
 
@@ -357,6 +452,23 @@ write "Jellyfin Launched." & return to logFile
 delay 1
 ```
 
+#### Start CrowdSec
+
+Podman and the `crowdsec` container should be started before Caddy. This gives Caddy's CrowdSec
+bouncer a running local API to connect to when Caddy starts. If you skipped CrowdSec Filtering,
+don't include this block from your startup script.
+
+```applescript
+-- Start Podman and CrowdSec
+write "Starting Podman machine." & return to logFile
+do shell script "/opt/homebrew/bin/podman machine start || true"
+delay 5
+
+write "Starting CrowdSec container." & return to logFile
+do shell script "/opt/homebrew/bin/podman start crowdsec || true"
+delay 2
+```
+
 #### Start Caddy
 
 If you have implemented Caddy as your reverse proxy, that can now be started.
@@ -378,7 +490,7 @@ A launch agent is needed to execute the startup script.
    * If the `LaunchAgents` directory does not exist in `Library`, create and enter it with `mkdir LaunchAgents && cd LaunchAgents`.
 3. Create a new file for the launch agent with `touch jellyfin.launch.plist`
 4. Open the file with the text editor of your choosing and enter the contents below making sure to edit the startup
-   script file path to the location you saved your script. Also, enter the API key required for dns updates within the
+   script file path to the location you saved your script. Also, enter any required API keys within the
    `EnvironmentVariables` dictionary.
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -389,6 +501,8 @@ A launch agent is needed to execute the startup script.
        <dict>
             <key>CLOUDFLARE_API_TOKEN</key>
             <string>REPLACE-WITH-YOUR-API-KEY</string>
+            <key>CROWDSEC_API_KEY</key>
+            <string>REPLACE-WITH-YOUR-BOUNCER-KEY</string>
        </dict>
        <key>Label</key>
        <string>jellyfin.launch</string>
@@ -405,6 +519,7 @@ A launch agent is needed to execute the startup script.
    </plist>
    ```
    The reference to `osascript` is required in the array. This is the Apple application that executes apple script files. 
+   If you skipped CrowdSec Filtering, remove `CROWDSEC_API_KEY` from the environment variables.
 5. To test the new launch agent run `launchctl load jellyfin.launch.plist`. On the first run, `osascript` may require
    permissions, approve them.
 
@@ -423,7 +538,7 @@ login to handle restarts completely. This can't be done if FileVault is enabled.
 3. Click the users list drop down next to `Automatically log in as` and select your user.
 4. Enter the password used for login.
 
-The server may now restart and have Jellyfin and Caddy elegantly resume operation. 
+The server may now restart and have Jellyfin, CrowdSec, and Caddy elegantly resume operation.
 
 # Limit macOS System Media Scans
 

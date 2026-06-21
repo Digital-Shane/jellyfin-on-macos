@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 
 
+## 2026-06-21
+### Added
+* Instructions for adding open source crowdsec security filtering.
+
+
 ## 2026-06-20
 ### Added
 * Instructions for adding media directories to spotlight privacy to prevent unnecessary disk activity.
