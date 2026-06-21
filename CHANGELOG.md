@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## 2026-06-21
 ### Added
 * Instructions for adding open source crowdsec security filtering.
+### Updated
+* Per-process CPU and Memory visualizations on dashboard.
 
 
 ## 2026-06-20
