@@ -67,7 +67,8 @@ others, so they could skip the hassle. The goals of this implementation are:
    - [Create Dashboard](#create-dashboard)
    - [Update Startup Script](#update-startup-script)
 10. [LiveTV](#livetv)
-11. [Star History](#star-history)
+11. [Backups](#backups)
+12. [Star History](#star-history)
 
 ## Setup RAID Array
 
@@ -792,6 +793,53 @@ delay 1
 ```
 
 You can view the [full script with metric handling and ErsatzTV here](./startup-script-livetv).
+
+# Backups
+
+## Jellyfin
+
+I recommend backing up Jellyfin's database before major version updates. Each backups require several GBs of space.
+Backing up my database alone consumes 8 GB. Including metadata, subtitles, and trickplay images increases the size
+to 17 GB. I choose to backup only my database. The remaining items can be rebuild by Jellyfin with time. Jellyfin
+added a method of backing up the database right in the UI:
+
+1. Login to your Jellyfin instance and open the Administration Dashboard.
+2. Open `Backups` under the advanced settings.
+3. Click `+ Create Backup`, and `Create`.
+
+## ErsatzTV
+
+ErsatzTV has no method to create backups in its UI. To get around this I created an applescript that backups
+ErsatzTV's critical data directories. Make sure to update the storage path for backups. Save the script to
+your machine and run it before updating ErsatzTV.
+
+```applescript
+-- ErsatzTV Backup
+-- TODO Update backup storage location
+set backupRootDir to "/Volumes/media1/Backups/ErsatzTV"
+
+
+set homeDir to POSIX path of (path to home folder)
+set timeStamp to do shell script "date +%Y-%m-%d"
+
+-- Kill the running instance
+try
+	do shell script "killall 'ErsatzTV' 'ErsatzTV-macOS'"
+end try
+
+-- Build backup directory path
+set ersBackupDir to backupRootDir & "/" & timeStamp & "_" & version
+do shell script "mkdir -p " & quoted form of ersBackupDir
+
+-- Copy ErsatzTV application support directory
+set ersDataDir to homeDir & "Library/Application Support/ersatztv"
+do shell script "cp -a " & quoted form of ersDataDir & " " & quoted form of ersBackupDir
+
+-- Launch ErsatzTV
+tell application "Finder"
+	open application file "ErsatzTV.app" of folder "Applications" of startup disk
+end tell
+```
 
 ## Star History
 

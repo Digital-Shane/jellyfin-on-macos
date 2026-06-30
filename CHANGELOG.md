@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2026-06-30
+### Added
+* Instructions for performing backups for Jellyfin and ErsatzTV
+
 
 ## 2026-06-21
 ### Added
