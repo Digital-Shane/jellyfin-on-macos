@@ -1,9 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2026-09-13
+### Added
+* Pangram proof of human authorship.
+### Removed
+* Star history. The site keeps breaking and I don't care enough about it anymore.
+
+
 ## 2026-06-30
 ### Added
-* Instructions for performing backups for Jellyfin and ErsatzTV
+* Instructions for performing backups for Jellyfin and ErsatzTV.
 
 
 ## 2026-06-21

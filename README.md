@@ -1,5 +1,11 @@
 # Hosting Jellyfin on macOS. The Ultimate Guide.
 
+<a href="https://www.pangram.com/history/bcbc6f48-7095-4310-ab52-b73d0ea8ff37?ucc=uFudcooOnuA">
+  <img src="pangram-card.svg" alt="View Pangram AI detection results" width="100%">
+</a>
+
+</br>
+
 MacOS, especially on ARM-based Mac minis, offers a remarkably powerful and affordable platform for Jellyfin.
 
 ARM Mac minis deliver exceptional transcoding performance thanks to Apple's M series processors and
@@ -840,7 +846,3 @@ tell application "Finder"
 	open application file "ErsatzTV.app" of folder "Applications" of startup disk
 end tell
 ```
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Digital-Shane/jellyfin-on-macos&type=Date)](https://www.star-history.com/#Digital-Shane/jellyfin-on-macos&Date)
